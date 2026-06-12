@@ -300,22 +300,22 @@
  
  async function kvGetBySecret(secret :string, kv :KVNamespace
                             ) :Promise<KVSecretRecord|null> {
-  return kv.get<KVSecretRecord>("Ks:" + secret, 'json');
+  return kv.get<KVSecretRecord>("Ks9:" + secret, 'json');
  }
  
  async function kvGetByPublicKey(publicKey :string, kv :KVNamespace
                                ) :Promise<string|null> {
-  return kv.get("Ku:" + publicKey);
+  return kv.get("Ku9:" + publicKey);
  }
  
  async function kvStore(secret :string, record :KVSecretRecord,
                        kv :KVNamespace) :Promise<void> {
-  return kv.put("Ks:" + secret, JSON.stringify(record));
+  return kv.put("Ks9:" + secret, JSON.stringify(record));
  }
  
  async function kvStoreReverse(publicKey :string, secret :string,
                               kv :KVNamespace) :Promise<void> {
-  return kv.put("Ku:" + publicKey, secret);
+  return kv.put("Ku9:" + publicKey, secret);
  }
  
  async function authentication_records(residue :number, env :Env
