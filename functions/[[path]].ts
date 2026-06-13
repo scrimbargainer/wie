@@ -1,32 +1,63 @@
- 
+
  /* TSP: clean w/ TSv5.8.3 -> ES2020 (no JSX, no Module) */
 
  import { env } from "cloudflare:workers";
  /// "use strict";
 
- /**/const globje= (( ()=>{} ).constructor('return this;'))();
- /**/const proces= globje['process'] || { 'env': env };
+ ;interface Objetc { [key :string]: Objetc; };
+ ;interface Objest { [key :string]: string; };
+ //;interface Objunc { [key :string]: string & Objetc; };
+ //;interface Objust { [key :string]: string | Objetc; };
+
+ /**/const globje :Objetc= (()=>{}).constructor('return this;')();
+ /**/const envenv :Objest= /**/ (env as unknown as Objest)
+ /**/                   || /**/ { 'globje': globje as unknown as string, };
+
+ /**/const proces :Objetc= /**/ globje['process']
+ /**/                   || /**/ { 'env':    envenv as unknown as Objetc,
+ /**/                             'globje': globje,                      };
+
+ const EV :Objest= {};
+ const EVs_OK= ()=>{ return EV; };
+ const EVs_DO= (pe= proces.env)=>{
+   let X_SECRET= EV.X_SECRET; if (X_SECRET) {} else { X_SECRET=
+     EV.X_SECRET = "" + pe['X_SECRET'];
+     const l3= Math.floor((X_SECRET.length)/3);
+     EV.A_SECRET = X_SECRET.slice(0, l3);
+     EV.A_PRIKEY = "" + pe['A_PRIKEY'];
+     EV.WIKI_API = 'https:'+'//shplatsh.miraheze.org/w/api.php'; // TODO= better
+     EV.BOT_USER = "" + pe['BOT_USER'];
+     EV.BOT_PASS = "" + pe['BOT_PASS'] + EV.A_SECRET;
+   }
+   return EV;
+ };
+
+ const EVs= ((()=>{ const not= !proces.env['globje'];
+                    return not? (EVs_DO(), EVs_OK): EVs_DO; })());
  
- ////const A_SECRET = "" + proces.env['X_SECRET'];
- /**/const X_SECRET = "" + proces.env['X_SECRET'];
- /**/const A_PRIKEY = "" + proces.env['A_PRIKEY'];
- 
- ////const WIKI_API = 'https:'+'//splats.miraheze.org/w/api.php';
- /**/const WIKI_API = 'https:'+'//shplatsh.miraheze.org/w/api.php'; // TODO= better
- 
- /**/const BOT_USER = "" + proces.env['BOT_USER'];
- ////const BOT_PASS = "" + proces.env['BOT_PASS'] + A_SECRET.slice(0, A_SECRET.length-10);
- /**/const BOT_PASS = "" + proces.env['BOT_PASS'] + X_SECRET.slice(0, X_SECRET.length-10);
- 
+ /** /const globje= (( ()=>{} ).constructor('return this;'))();
+ /** /const proces= globje['process'] || { 'env': env };
+ /// /
+ /// /const A_SECRET = "" + proces.env['X_SECRET'];
+ /** /const X_SECRET = "" + proces.env['X_SECRET'];
+ /** /const A_PRIKEY = "" + proces.env['A_PRIKEY'];
+ /// /
+ /// /const WIKI_API = 'https:'+'//splats.miraheze.org/w/api.php';
+ /** /const WIKI_API = 'https:'+'//shplatsh.miraheze.org/w/api.php'; // TODO= better
+ /// /
+ /** /const BOT_USER = "" + proces.env['BOT_USER'];
+ /// /const BOT_PASS = "" + proces.env['BOT_PASS'] + A_SECRET.slice(0, A_SECRET.length-10);
+ /** /const BOT_PASS = "" + proces.env['BOT_PASS'] + X_SECRET.slice(0, X_SECRET.length-10);
+     /**/
  const always= true; always; // const never= false;
  //;interface _t_ { _: _t_ }; const _ :_t_= { _: (undefined as unknown as _t_), }; _._= _;
  ;interface AssociativeArray<RangeType> { [key :string]: RangeType; };
  
     /**\
  ;interface KVRecord {
-  public_key    :string;
-  page_matches  :string;
-  expires_after :string; // DATE as ISO string
+  publickey    :string;
+  pagematches  :string;
+  expiresafter :string; // DATE as ISO string
  }; /**/
  
     /**\
@@ -81,7 +112,6 @@
   if (typeof residue !== 'number')                      throw new Error('Missing residue');
   if (typeof page    !== 'string' || !page)             throw new Error('Missing page');
   if (typeof text    !== 'string' || !text)             throw new Error('Missing text');
-  if (       secret  !== X_SECRET)                      throw new Error('Expired secret');
   return { secret, residue, page, text };
  }
  /**\
@@ -137,7 +167,7 @@
                  { name: 'HMAC', hash: 'SHA-256', length: 512 }, true, ['sign', 'verify'] );
  
     const sharedKey_out= await crypto.subtle.deriveKey( { name: 'ECDH', public: pubkey }, prikey,
-      { name: 'HMAC', hash: 'SHA-256', length: 512 }, true, ['sign', 'verify'] ); sharedKey_out;
+      { name: 'HMAC', hash: 'SHA-256', length: 256 }, true, ['sign', 'verify'] ); sharedKey_out;
  
     // export as JWK and return as base64 string for KV storage
     const exported= await crypto.subtle.exportKey('jwk', sharedHMACKey);
@@ -300,22 +330,22 @@
  
  async function kvGetBySecret(secret :string, kv :KVNamespace
                             ) :Promise<KVSecretRecord|null> {
-  return kv.get<KVSecretRecord>("Ks9:" + secret, 'json');
+  return kv.get<KVSecretRecord>("Ks:" + secret, 'json');
  }
  
  async function kvGetByPublicKey(publicKey :string, kv :KVNamespace
                                ) :Promise<string|null> {
-  return kv.get("Ku9:" + publicKey);
+  return kv.get("Ku:" + publicKey);
  }
  
  async function kvStore(secret :string, record :KVSecretRecord,
                        kv :KVNamespace) :Promise<void> {
-  return kv.put("Ks9:" + secret, JSON.stringify(record));
+  return kv.put("Ks:" + secret, JSON.stringify(record));
  }
  
  async function kvStoreReverse(publicKey :string, secret :string,
                               kv :KVNamespace) :Promise<void> {
-  return kv.put("Ku9:" + publicKey, secret);
+  return kv.put("Ku:" + publicKey, secret);
  }
  
  async function authentication_records(residue :number, env :Env
@@ -393,8 +423,10 @@
     if (cachedSecret !== null) continue; // ECDH already done, secret didn't match
  
     // compute ECDH — expensive, therefore last
-    const derived= await computeECDH(A_PRIKEY, rec.essence);
-    if (derived !== null) {} else throw new Error('Miscalculated');
+    const derived= await computeECDH(EV.A_PRIKEY, rec.essence);
+    if (derived !== null) {} else throw new Error('Miscalculated'
+ + " (" + (""+EV.A_PRIKEY).length + ", " + (""+rec.essence).length + ")"
+                                                 );
  
  if (!!!always) {}                                   else {
     // populate both KV records regardless of match
@@ -423,7 +455,7 @@
   };
  
   // Step 1: fetch login token
-  const loginTokenReq= (WIKI_API + '?action=query&meta=tokens&type=login&format=json');
+  const loginTokenReq= (EV.WIKI_API + '?action=query&meta=tokens&type=login&format=json');
   const loginTokenRes= await fetch(loginTokenReq,    {
     headers: { 'User-Agent': headers['User-Agent'] } });
   if (loginTokenRes.ok) {} else throw new
@@ -433,13 +465,13 @@
   const cookies1 = loginTokenRes.headers.get('set-cookie') ?? "";
  
   // Step 2: log in
-  const loginRes= await fetch(WIKI_API, {
+  const loginRes= await fetch(EV.WIKI_API, {
     method:  'POST',
     headers: { ...headers, 'Cookie': cookies1 },
     body: new URLSearchParams({
       action:     'login',
-      lgname:     BOT_USER,
-      lgpassword: BOT_PASS,
+      lgname:     EV.BOT_USER,
+      lgpassword: EV.BOT_PASS,
       lgtoken:    loginToken,
       format:     'json'      })            });
   if (!loginRes.ok) throw new Error('Failed to log in');
@@ -450,7 +482,7 @@
   const cookies2= [cookies1, loginRes.headers.get('set-cookie')].filter(Boolean).join('; ');
  
   // Step 3: fetch edit token
-  const editTokenRes= await fetch(`${WIKI_API}?action=query&meta=tokens&format=json`,
+  const editTokenRes= await fetch(`${EV.WIKI_API}?action=query&meta=tokens&format=json`,
                                   { headers: { ...headers, 'Cookie': cookies2 } });
   if (!editTokenRes.ok) throw new Error('Failed to fetch edit token');
   const editTokenData= await editTokenRes.json<string_shim_t_>();
@@ -458,7 +490,7 @@
   const cookies3= [cookies2, editTokenRes.headers.get('set-cookie')].filter(Boolean).join('; ');
  
   // Step 4: append text
-  const editRes= await fetch(WIKI_API, {
+  const editRes= await fetch(EV.WIKI_API, {
     method: 'POST',
     headers: { ...headers, 'Cookie': cookies3 },
     body: new URLSearchParams({
@@ -479,10 +511,20 @@
  
  const worker_export_default= { //was: export default {
   async fetch(request :Request, env :Env) :Promise<Response> {
+    const password= request.headers.get('X-Secret') ?? "";
+    const PIN= password.slice(0, EV.A_SECRET.length);
+ 
+    if (PIN === EV.A_SECRET) {} else {
+     return new Response("Expired PIN", { status: 403 });
+    } // TODO= USE= password
+ 
     let secret :string, residue :number, page :string, text :string;
  
     try { ({ secret, residue, page, text }= await validate(request)); }
     catch (e) { return new Response((e as Error).message, { status: 400 }); }
+
+ ///if (                   EV.X_SECRET) {} else           throw new Error('Unknown secret');
+ ///if (       secret  !== EV.X_SECRET)                   throw new Error('Expired secret');
  
     try { await authenticate(secret, residue, (page.charAt(0)==='/'? "": "/") + page, env); }
     catch (e) { return new Response((e as Error).message, { status: 401 }); }
@@ -493,6 +535,6 @@
  };
  
  export async function onRequest(ctx :EventContext<Record<string, string>,
-                                            any, Record<string, unknown>>) {
-    return await worker_export_default.fetch(ctx.request, ctx.env, ctx);   }
+                                            any, Record<string, unknown>>) { EVs_DO();
+    return await worker_export_default.fetch(ctx.request, ctx.env/**\, ctx/**/ );   }
  
