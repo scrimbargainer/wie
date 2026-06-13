@@ -1,22 +1,22 @@
-
+ 
  /* TSP: clean w/ TSv5.8.3 -> ES2020 (no JSX, no Module) */
-
+ 
  import { env } from "cloudflare:workers";
  /// "use strict";
-
+ 
  ;interface Objetc { [key :string]: Objetc; };
  ;interface Objest { [key :string]: string; };
  //;interface Objunc { [key :string]: string & Objetc; };
  //;interface Objust { [key :string]: string | Objetc; };
-
+ 
  /**/const globje :Objetc= (()=>{}).constructor('return this;')();
  /**/const envenv :Objest= /**/ (env as unknown as Objest)
  /**/                   || /**/ { 'globje': globje as unknown as string, };
-
+ 
  /**/const proces :Objetc= /**/ globje['process']
  /**/                   || /**/ { 'env':    envenv as unknown as Objetc,
  /**/                             'globje': globje,                      };
-
+ 
  const EV :Objest= {};
  const EVs_OK= ()=>{ return EV; };
  const EVs_DO= (pe= proces.env)=>{
@@ -31,7 +31,7 @@
    }
    return EV;
  };
-
+ 
  const EVs= ((()=>{ const not= !proces.env['globje'];
                     return not? (EVs_DO(), EVs_OK): EVs_DO; })());
  
@@ -55,9 +55,9 @@
  
     /**\
  ;interface KVRecord {
-  publickey    :string;
-  pagematches  :string;
-  expiresafter :string; // DATE as ISO string
+  public_key    :string;
+  page_matches  :string;
+  expires_after :string; // DATE as ISO string
  }; /**/
  
     /**\
