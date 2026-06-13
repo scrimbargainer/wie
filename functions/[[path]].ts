@@ -330,22 +330,22 @@
  
  async function kvGetBySecret(secret :string, kv :KVNamespace
                             ) :Promise<KVSecretRecord|null> {
-  return kv.get<KVSecretRecord>("Ks:" + secret, 'json');
+  return kv.get<KVSecretRecord>("Ks7:" + secret, 'json');
  }
  
  async function kvGetByPublicKey(publicKey :string, kv :KVNamespace
                                ) :Promise<string|null> {
-  return kv.get("Ku:" + publicKey);
+  return kv.get("Ku7:" + publicKey);
  }
  
  async function kvStore(secret :string, record :KVSecretRecord,
                        kv :KVNamespace) :Promise<void> {
-  return kv.put("Ks:" + secret, JSON.stringify(record));
+  return kv.put("Ks7:" + secret, JSON.stringify(record));
  }
  
  async function kvStoreReverse(publicKey :string, secret :string,
                               kv :KVNamespace) :Promise<void> {
-  return kv.put("Ku:" + publicKey, secret);
+  return kv.put("Ku7:" + publicKey, secret);
  }
  
  async function authentication_records(residue :number, env :Env
@@ -406,7 +406,7 @@
     return;         } // authenticated and authorised
  
   // Step 3: query D1 by residue
-  const records :DBRecord[]= (!!!always)? await authentication_records(residue, env) ?? []:
+  const records :DBRecord[]= (! !always)? await authentication_records(residue, env) ?? []:
                                           [ specimen_authrecord ];
   if (records.length === 0) throw new Error('Unauthorized');
  
@@ -511,6 +511,9 @@
  
  const worker_export_default= { //was: export default {
   async fetch(request :Request, env :Env) :Promise<Response> {
+ 
+ ///if (                   EV.A_SECRET) {} else           throw new Error('Invalid PIN');
+ 
     const password= request.headers.get('X-Secret') ?? "";
     const PIN= password.slice(0, EV.A_SECRET.length);
  
@@ -522,9 +525,8 @@
  
     try { ({ secret, residue, page, text }= await validate(request)); }
     catch (e) { return new Response((e as Error).message, { status: 400 }); }
-
- ///if (                   EV.X_SECRET) {} else           throw new Error('Unknown secret');
- ///if (       secret  !== EV.X_SECRET)                   throw new Error('Expired secret');
+ 
+ ///if (      password === EV.X_SECRET) {} else           throw new Error('Expired password');
  
     try { await authenticate(secret, residue, (page.charAt(0)==='/'? "": "/") + page, env); }
     catch (e) { return new Response((e as Error).message, { status: 401 }); }
@@ -535,6 +537,6 @@
  };
  
  export async function onRequest(ctx :EventContext<Record<string, string>,
-                                            any, Record<string, unknown>>) { EVs_DO();
+                                            any, Record<string, unknown>>) { EVs();
     return await worker_export_default.fetch(ctx.request, ctx.env/**\, ctx/**/ );   }
  
